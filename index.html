@@ -30,27 +30,39 @@
 
         Papa.parse(fileInput.files[0], {
           complete: function(results) {
-            var csvData = [['ID', 'Parent', 'Child']];
-            var idCounter = 0;
+            var wordMap = {};
+            var csvData = [['ID', 'Parent', 'Phrases']];
+            var idCounter = 1; // Start counter at 1
+
             results.data.forEach(row => {
               var phrase = row[0];
               var words = phrase.split(' ');
               var parentIndex = null;
               for (var i = 0; i < words.length; i++) {
                 var currentWord = words[i];
-                csvData.push([idCounter, parentIndex, currentWord]);
-                parentIndex = idCounter;
-                idCounter++;
+                if (i === 0) {
+                  if (!wordMap[currentWord]) {
+                    parentIndex = idCounter++;
+                    wordMap[currentWord] = parentIndex;
+                    csvData.push([parentIndex, null, currentWord]);
+                  } else {
+                    parentIndex = wordMap[currentWord];
+                  }
+                } else {
+                  var currentId = idCounter++;
+                  csvData.push([currentId, parentIndex, currentWord]);
+                  parentIndex = currentId;
+                }
               }
             });
-            
+
             try {
               var data = google.visualization.arrayToDataTable(csvData);
               
               var options = {
                 wordtree: {
-                  format: "explicit" // Utilizando el formato 'explicit'
-                },
+                  format: "explicit"
+                }
               };
 
               var chart = new google.visualization.WordTree(document.getElementById("wordtree_basic"));
