@@ -30,16 +30,26 @@
 
         Papa.parse(fileInput.files[0], {
           complete: function(results) {
-            var csvData = results.data.map(row => row);
-            csvData.unshift(['Phrases']);
+            var csvData = [['ID', 'Parent', 'Child']];
+            var idCounter = 0;
+            results.data.forEach(row => {
+              var phrase = row[0];
+              var words = phrase.split(' ');
+              var parentIndex = null;
+              for (var i = 0; i < words.length; i++) {
+                var currentWord = words[i];
+                csvData.push([idCounter, parentIndex, currentWord]);
+                parentIndex = idCounter;
+                idCounter++;
+              }
+            });
             
             try {
               var data = google.visualization.arrayToDataTable(csvData);
               
               var options = {
                 wordtree: {
-                  format: "implicit",
-                  word: startWord
+                  format: "explicit" // Utilizando el formato 'explicit'
                 },
               };
 
